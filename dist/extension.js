@@ -38,6 +38,8 @@ exports.deactivate = deactivate;
 // src/extension.ts
 // Entry point for the VS Code extension 
 const vscode = __importStar(require("vscode"));
+const path = __importStar(require("path"));
+const fs = __importStar(require("fs"));
 function activate(context) {
     console.log('VisuCode extension is now active!');
     // Register commands
@@ -62,13 +64,32 @@ function openVisuCodeCanvas(extensionUri) {
         retainContextWhenHidden: true,
         localResourceRoots: [extensionUri]
     });
-    panel.webview.html = getWebviewContent();
+    // Load the built webview HTML file
+    const webviewPath = path.join(extensionUri.fsPath, 'webview', 'index.html');
+    try {
+        if (fs.existsSync(webviewPath)) {
+            let htmlContent = fs.readFileSync(webviewPath, 'utf8');
+            // Convert local file paths to webview URIs
+            const bundleUri = panel.webview.asWebviewUri(vscode.Uri.file(path.join(extensionUri.fsPath, 'webview', 'bundle.js')));
+            // Replace the bundle.js reference with the webview URI
+            htmlContent = htmlContent.replace('src="bundle.js"', `src="${bundleUri}"`);
+            panel.webview.html = htmlContent;
+        }
+        else {
+            // Fallback to a simple message if the built files don't exist
+            panel.webview.html = getFallbackContent();
+        }
+    }
+    catch (error) {
+        console.error('Error loading webview:', error);
+        panel.webview.html = getFallbackContent();
+    }
     // Handle panel close
     panel.onDidDispose(() => {
         console.log('VisuCode Canvas panel closed');
     });
 }
-function getWebviewContent() {
+function getFallbackContent() {
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,56 +113,28 @@ function getWebviewContent() {
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            text-align: center;
+            padding-top: 100px;
         }
         
-        .header {
+        .error-message {
             background-color: #2d2d30;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            margin: 0 0 10px 0;
-            font-size: 2.5em;
-            color: #007acc;
-        }
-        
-        .header p {
-            margin: 0;
-            font-size: 1.2em;
-            color: #cccccc;
-        }
-        
-        .canvas-area {
-            background-color: #3c3c3c;
-            border: 3px dashed #666;
-            border-radius: 8px;
             padding: 40px;
-            text-align: center;
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border-radius: 8px;
+            border: 2px solid #ff6b6b;
         }
         
-        .canvas-content {
-            max-width: 600px;
-        }
-        
-        .canvas-content h2 {
-            color: #4CAF50;
+        .error-message h1 {
+            color: #ff6b6b;
             margin-bottom: 20px;
         }
         
-        .canvas-content p {
+        .error-message p {
             color: #cccccc;
-            margin-bottom: 30px;
-            line-height: 1.6;
+            margin-bottom: 20px;
         }
         
-        .test-button {
+        .build-button {
             background: #007acc;
             color: white;
             border: none;
@@ -150,93 +143,18 @@ function getWebviewContent() {
             cursor: pointer;
             font-size: 16px;
             font-weight: 500;
-            transition: background-color 0.2s;
-        }
-        
-        .test-button:hover {
-            background: #005a9e;
-        }
-        
-        .features {
-            margin-top: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-        
-        .feature {
-            background-color: #2d2d30;
-            padding: 20px;
-            border-radius: 6px;
-            text-align: center;
-        }
-        
-        .feature h3 {
-            color: #4CAF50;
-            margin-bottom: 10px;
-        }
-        
-        .feature p {
-            color: #cccccc;
-            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎨 VisuCode Canvas</h1>
-            <p>Revolutionary Visual Coding Interface for VS Code</p>
-        </div>
-        
-        <div class="canvas-area">
-            <div class="canvas-content">
-                <h2>🚀 Canvas Ready!</h2>
-                <p>Your visual coding interface is now active. This canvas will soon feature interactive code nodes, AI-powered operations, and real-time collaboration.</p>
-                <button class="test-button" onclick="testInteraction()">
-                    🎯 Test Interaction
-                </button>
-            </div>
-        </div>
-        
-        <div class="features">
-            <div class="feature">
-                <h3>🔍 Code Visualization</h3>
-                <p>See your codebase as interconnected visual nodes</p>
-            </div>
-            <div class="feature">
-                <h3>🤖 AI Integration</h3>
-                <p>MCP-powered AI operations and code analysis</p>
-            </div>
-            <div class="feature">
-                <h3>🎨 Interactive Canvas</h3>
-                <p>Click, drag, and interact with code components</p>
-            </div>
-            <div class="feature">
-                <h3>⚡ Real-time Sync</h3>
-                <p>Live synchronization with your actual codebase</p>
-            </div>
+        <div class="error-message">
+            <h1>🚨 Build Required</h1>
+            <p>The webview files have not been built yet. Please run:</p>
+            <p><code>npm run build</code></p>
+            <p>Then reload the extension.</p>
         </div>
     </div>
-    
-    <script>
-        function testInteraction() {
-            const button = event.target;
-            const originalText = button.textContent;
-            button.textContent = '✅ Working!';
-            button.style.background = '#4CAF50';
-            
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.style.background = '#007acc';
-            }, 2000);
-            
-            console.log('VisuCode Canvas interaction test successful!');
-        }
-        
-        // Log that the WebView is loaded
-        console.log('VisuCode Canvas WebView loaded successfully!');
-    </script>
 </body>
 </html>`;
 }

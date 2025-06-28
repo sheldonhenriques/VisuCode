@@ -22,7 +22,7 @@ const App = () => {
     const handleNodeClick = (node) => {
         console.log('Node clicked:', node);
     };
-    return ((0, jsx_runtime_1.jsx)("div", { className: "canvas-container", children: (0, jsx_runtime_1.jsx)(Canvas_1.Canvas, { nodes: mockNodes, connections: mockConnections, onNodeClick: handleNodeClick }) }));
+    return ((0, jsx_runtime_1.jsx)(Canvas_1.Canvas, { nodes: mockNodes, connections: mockConnections, onNodeClick: handleNodeClick }));
 };
 const root = client_1.default.createRoot(document.getElementById('root'));
 root.render((0, jsx_runtime_1.jsx)(react_1.default.StrictMode, { children: (0, jsx_runtime_1.jsx)(App, {}) }));

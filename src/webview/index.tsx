@@ -21,13 +21,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="canvas-container">
-      <Canvas 
-        nodes={mockNodes} 
-        connections={mockConnections} 
-        onNodeClick={handleNodeClick}
-      />
-    </div>
+    <Canvas 
+      nodes={mockNodes} 
+      connections={mockConnections} 
+      onNodeClick={handleNodeClick}
+    />
   );
 };
 

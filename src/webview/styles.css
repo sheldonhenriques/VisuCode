@@ -1,12 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* Custom styles for VisuCode */
-body {
-  @apply bg-gray-900 text-gray-100;
+html, body, #root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+  color: #333333;
 }
 
 .canvas-container {
-  @apply w-full h-full bg-gray-900;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  position: relative;
 } 
